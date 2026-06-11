@@ -1,24 +1,28 @@
 import sqlite3
 import os
+import sys
 import shutil
 import uuid
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import flet as ft
 
-# Ruta de la base de datos (en la carpeta del proyecto)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 DB_PATH = os.path.join(BASE_DIR, "finance_tracker.db")
 
 def get_connection() -> sqlite3.Connection:
     """
-    Obtiene una conexión a la base de datos SQLite.
+    Obtiene una conexión a la base de datos SQLite de forma segura en la ruta de ejecución real.
     
     Returns:
         sqlite3.Connection: Objeto de conexión a la base de datos.
     """
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # Permite acceder a columnas por nombre
+    conn.row_factory = sqlite3.Row 
     return conn
 
 def _ensure_custom_column() -> None:
@@ -1765,7 +1769,7 @@ def backup_database(destination_path: str) -> None:
     shutil.copy2(DB_PATH, destination_path)
 
 def restore_database(source_path: str) -> None:
-    """Reemplaza la base de datos actual con un archivo de respaldo con rollback de seguridad."""
+    """Reemplaza la base de datos actual con un archivo de respaldo con rollback de seguridad y reaplica las migraciones."""
     temp_backup = DB_PATH + ".bak"
     try:
         if os.path.exists(DB_PATH):
@@ -1773,6 +1777,9 @@ def restore_database(source_path: str) -> None:
         shutil.copy2(source_path, DB_PATH)
         if os.path.exists(temp_backup):
             os.remove(temp_backup)
+            
+        init_database()
+        
     except Exception as e:
         if os.path.exists(temp_backup):
             shutil.copy2(temp_backup, DB_PATH)
