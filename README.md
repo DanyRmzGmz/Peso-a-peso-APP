@@ -165,7 +165,7 @@ pyinstaller --clean \
             --hidden-import="pyotp" \
             --hidden-import="qrcode" \
             --hidden-import="PIL" \
-            main.py
+            main.pys
 
 Directrices Post-Compilación
 Una vez concluida con éxito la tarea de empaquetado del ejecutable:
